@@ -27,3 +27,13 @@
  - git commit -m "수정내용"
  - git push origin master
 
+
+
+(github 소스다운로드)
+ - git clone  git@github.com:jongbeomKim76/first-noona-project
+(소스 수정 후 올리기)
+ - git add .
+ - git commit -m "수정사항"
+ - git checkout -b aaaa
+ - git push origin aaaa
+ 
