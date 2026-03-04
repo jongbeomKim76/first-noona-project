@@ -37,5 +37,11 @@
  - git checkout -b aaaa
  - git push origin aaaa
  
-
- 
+ (사용자 변경)
+  - git checkout master
+  - git pull origin master
+  - git add .
+  - git commit -m "수집"
+  - git push origin master
+  
+  
