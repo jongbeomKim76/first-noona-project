@@ -22,5 +22,8 @@
  - git remote add origin git@github.com:jongbeomKim76/first-noona-project
  - git remote -v
  - git push origin master
+ (수정 후 올리기)
+ - git add .
+ - git commit -m "수정내용"
+ - git push origin master
 
- 
