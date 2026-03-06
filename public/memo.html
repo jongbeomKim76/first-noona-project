@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>메모앱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #memoTitle {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: border-color 0.3s;
+        }
+
+        #memoTitle:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #memoInput {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            font-family: 'Arial', sans-serif;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        #memoInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #addBtn {
+            padding: 12px 25px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        #addBtn:hover {
+            background-color: #5568d3;
+        }
+
+        .memo-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .memo-item {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #667eea;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .memo-text {
+            flex: 1;
+            color: #333;
+            word-break: break-word;
+        }
+
+        .memo-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .memo-content {
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 5px;
+            white-space: pre-wrap;
+        }
+
+        .memo-date {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .delete-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .delete-btn:hover {
+            background-color: #ee5a52;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+
+        .memo-count {
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 메모앱</h1>
+        
+        <div class="input-section">
+            <input 
+                type="text" 
+                id="memoTitle" 
+                placeholder="제목을 입력하세요..."
+                maxlength="30"
+            >
+        </div>
+
+        <div class="input-section">
+            <textarea 
+                id="memoInput" 
+                placeholder="메모를 입력하세요..."
+                rows="3"
+            ></textarea>
+            <button id="addBtn">추가</button>
+        </div>
+
+        <div class="memo-list" id="memoList">
+            <div class="empty-message">메모를 추가해보세요!</div>
+        </div>
+
+        <div class="memo-count">
+            <span id="memoCount">0</span>개의 메모
+        </div>
+    </div>
+
+    <script>
+        const memoTitle = document.getElementById('memoTitle');
+        const memoInput = document.getElementById('memoInput');
+        const addBtn = document.getElementById('addBtn');
+        const memoList = document.getElementById('memoList');
+        const memoCount = document.getElementById('memoCount');
+
+        // 로컬 스토리지에서 메모 로드
+        let memos = JSON.parse(localStorage.getItem('memos')) || [];
+
+        // 페이지 로드 시 메모 표시
+        displayMemos();
+
+        // 추가 버튼 클릭 이벤트
+        addBtn.addEventListener('click', addMemo);
+
+        // 엔터 키 이벤트 (메모 내용에서)
+        memoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                addMemo();
+            }
+        });
+
+        function addMemo() {
+            const title = memoTitle.value.trim();
+            const content = memoInput.value.trim();
+            
+            if (title === '' || content === '') {
+                alert('제목과 메모를 모두 입력하세요!');
+                return;
+            }
+
+            const memo = {
+                id: Date.now(),
+                title: title,
+                content: content,
+                date: new Date().toLocaleString('ko-KR')
+            };
+
+            memos.unshift(memo);
+            saveMemos();
+            displayMemos();
+            memoTitle.value = '';
+            memoInput.value = '';
+            memoTitle.focus();
+        }
+
+        function deleteMemo(id) {
+            memos = memos.filter(memo => memo.id !== id);
+            saveMemos();
+            displayMemos();
+        }
+
+        function displayMemos() {
+            memoList.innerHTML = '';
+
+            if (memos.length === 0) {
+                memoList.innerHTML = '<div class="empty-message">메모를 추가해보세요!</div>';
+                memoCount.textContent = '0';
+                return;
+            }
+
+            memos.forEach(memo => {
+                const memoItem = document.createElement('div');
+                memoItem.className = 'memo-item';
+                memoItem.innerHTML = `
+                    <div class="memo-text">
+                        <div class="memo-title">${memo.title}</div>
+                        <div class="memo-content">${memo.content}</div>
+                        <div class="memo-date">${memo.date}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteMemo(${memo.id})">삭제</button>
+                `;
+                memoList.appendChild(memoItem);
+            });
+
+            memoCount.textContent = memos.length;
+        }
+
+        function saveMemos() {
+            localStorage.setItem('memos', JSON.stringify(memos));
+        }
+    </script>
+</body>
+</html>
